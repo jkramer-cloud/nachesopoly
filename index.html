@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#142d3a"><title>Nachesopoly · Valley Ventures — Stage 2.3</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<div class="backdrop" aria-hidden="true"><div class="mist"></div></div>
+<div class="app-shell">
+<header class="masthead"><div class="mark">N<span>V</span></div><div class="identity"><div class="eyebrow">NACHES VALLEY · COMMUNITY GAME</div><h1>NACHESOPOLY <small>Valley Ventures</small></h1></div><div class="build-tag">STAGE 2.3 <span>RELEASE CHECKS</span></div></header>
+<section id="setup" class="setup panel" aria-label="New game setup">
+  <div class="setup-hero"><div class="eyebrow">WELCOME TO THE VALLEY</div><h2>Make your mark on Naches.</h2><p>Acquire familiar locations, complete property groups, build improvements and outsmart your rivals. All in-game prices are fictional. This is a development preview, not a business endorsement.</p></div>
+  <div class="setup-body"><div class="setup-grid">
+    <label>Game format<select id="gameMode"><option value="quick">Quick Play</option><option value="full">Full Game</option></select></label>
+    <label>Quick Play ending<select id="quickEnd"><option value="rounds">Fixed rounds</option><option value="time">Classroom countdown</option></select></label>
+    <label>Rounds / player<select id="roundLimit"><option>4</option><option selected>6</option><option>8</option><option>12</option></select></label>
+    <label>Countdown length<select id="timeLimit"><option value="15">15 minutes</option><option value="25" selected>25 minutes</option><option value="35">35 minutes</option></select></label>
+    <label>Starting cash<select id="startingCash"><option value="1000">$1,000</option><option value="1500" selected>$1,500</option><option value="2000">$2,000</option></select></label>
+    <label>Computer turn speed<select id="botPace"><option value="story" selected>Story pace · watch each action</option><option value="balanced">Balanced · moderate</option><option value="fast">Fast · shorter delays</option></select></label>
+    <label>Computer difficulty<select id="defaultDifficulty"><option value="easy">Easy · forgiving</option><option value="normal" selected>Normal · balanced</option><option value="hard">Hard · strategic</option></select></label>
+    <label>AI strategy<select id="defaultAI"><option value="strategist">Strategist</option><option value="saver">Saver</option><option value="investor">Investor</option><option value="negotiator">Negotiator</option></select></label>
+  </div><div class="setup-subhead"><h3>Players <span class="hint">2–4 total · 1–3 computers · shared device</span></h3><button id="addHuman" class="button minor" type="button">+ Human</button><button id="addBot" class="button minor" type="button">+ Computer</button></div><div id="playerSetup" class="player-setup"></div>
+  <div class="setup-actions"><button id="newGame" class="button primary">Start a New Game <span aria-hidden="true">→</span></button><button id="continueGame" class="button secondary">Resume Saved Match</button><span id="setupError" role="status"></span></div></div>
+</section>
+<section id="game" class="game hidden" aria-label="Nachesopoly game">
+  <div class="hud"><div><span class="eyebrow">NACHES EDITION</span><strong id="roundTitle">Round 1</strong><span id="modeDescription" class="hint"></span></div><div id="statusTitle" class="hud-status" role="status" aria-live="polite">Ready to roll</div><div class="hud-buttons"><label class="pace-live">Computer speed <select id="aiPaceLive" aria-label="Computer turn pacing"><option value="story">Story</option><option value="balanced">Balanced</option><option value="fast">Fast</option></select></label><button class="button ghost" id="recapBtn">Last AI recap</button><button class="button ghost" id="cardGalleryBtn">Card Gallery</button><button class="button ghost" id="helpBtn">Rules</button><button class="button ghost" id="saveBtn">Save / Export</button><button class="button ghost" id="newBtn">Main menu</button></div></div>
+  <section id="eventPanel" class="event-panel hidden" aria-label="Event card" aria-live="polite"></section>
+  <section id="computerActivity" class="computer-activity hidden" aria-label="Computer turn activity" aria-live="off"></section>
+  <section id="computerRecap" class="computer-recap hidden" aria-labelledby="recapTitle" tabindex="-1"></section>
+<div class="game-columns">
+  <main class="board-zone" aria-label="Game board">
+    <div class="board-wrap"><div id="board" class="board" aria-label="Forty-space property board"></div></div>
+    <div id="boardPeek" class="board-peek" role="status" aria-live="off">Select or point to a space to see its name, price, and owner.</div>
+  </main>
+  <aside class="sidebar" aria-label="Player dashboard">
+    <div class="dashboard-eyebrow"><span class="dashboard-led"></span> PLAYER DASHBOARD <span>LIVE MATCH</span></div>
+    <div id="turnPanel" class="panel turn-panel"></div>
+    <section id="portfolioBar" class="portfolio-bar panel" aria-label="Active player property cards"></section>
+    <section class="panel rivals-panel" aria-label="Other players">
+      <div class="panel-heading"><h3>Other players</h3><span class="hint">Cash · net worth · properties</span></div>
+      <div id="playerCards" class="rival-list"></div>
+    </section>
+    <details id="managementDrawer" class="panel tools management-drawer">
+      <summary>Property management <span>Build · mortgage · trade</span></summary>
+      <div class="manage-content"><p class="subtle">Complete a color group to develop buildings. Manage your assets during your turn.</p><div id="ownedList"></div><div class="tool-buttons"><button class="button minor" id="tradeBtn">Propose trade</button><button class="button minor" id="historyBtn">Financial history</button></div></div>
+    </details>
+  </aside>
+</div>
+  <div class="bottom-rail"><strong>Latest:</strong><span id="lastAction">Welcome to Naches!</span><button class="textbtn" id="fullLogBtn">View transactions →</button></div>
+</section>
+<footer class="footer">Nachesopoly · Stage 2.3 development preview · School-friendly, locally themed strategy game · All financial values and events are fictional. No affiliation with pictured/named businesses.</footer>
+</div>
+<div id="actionToast" class="action-toast hidden" aria-live="polite" aria-atomic="true"></div>
+<div id="diceScene" class="dice-scene hidden" aria-live="polite"><div class="dice-scene-card"><div id="diceSceneTitle" class="dice-scene-title">Rolling dice…</div><div class="dice-stage"><div class="cube" id="rollingDieOne">⚀</div><div class="cube" id="rollingDieTwo">⚀</div></div><div id="diceSceneResult" class="dice-scene-result"></div></div></div>
+<div id="modal" class="modal-shell hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-card"><div class="modal-head"><h2 id="modalTitle"></h2><button id="closeModal" class="close" aria-label="Close dialogue">×</button></div><div id="modalBody"></div></div></div>
+<script src="data.js"></script><script src="game.js"></script></body></html>
