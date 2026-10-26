@@ -350,6 +350,117 @@ function renderPortfolio(){
  $('portfolioBar').querySelectorAll('[data-portfolio]').forEach(b=>b.onclick=()=>showSpace(Number(b.dataset.portfolio)));
 }
 
+// Stage 2.3.1: size each board-space label to its own available area.
+// Full, unmodified names remain in aria-label, title, and the property inspector.
+const SHORT_BOARD_LABELS = Object.freeze({
+  'Gateway to Naches':'Gateway',
+  'Cot’s Peak Coffee':'Cot’s Coffee',
+  'Valley Opportunity':'Valley Card',
+  'Highway Espresso':'Highway Cafe',
+  'Community Services Assessment':'Services Fee',
+  'US-12 Scenic Route':'US-12 Route',
+  'Naches Laundromat':'Laundromat',
+  'Community Events':'Event Card',
+  'The Floral Station':'Floral Shop',
+  'Laredo Drive-In':'Laredo',
+  'Scenic Detour / Visiting':'Detour',
+  'Sticky Fingers Bakery & Cafe':'Sticky Fingers',
+  'Valley Electric Service':'Electric Co.',
+  'D\'Nile Taphouse':'D\'Nile',
+  'Drift Inn 50’s Diner':'Drift Inn',
+  'Naches Trail Shuttle':'Trail Shuttle',
+  'LaKat Gallery & Design':'LaKat Gallery',
+  'The Little Red Schoolhouse':'Schoolhouse',
+  'Naches Trading Post':'Trading Post',
+  'Naches Depot Park':'Depot Park',
+  'Slim’s Market':'Slim’s',
+  'Thompson’s Farm Market':'Thompson’s',
+  'Naches Valley Fruit':'Valley Fruit',
+  'White Pass Connector':'White Pass',
+  'Oak Creek Ace Hardware':'Oak Creek Ace',
+  'Gleed Boys Tire':'Gleed Tire',
+  'Naches Water Works':'Water Works',
+  'Road Closure: Detour':'Road Closed',
+  'Dollar General Naches':'Dollar Gen.',
+  'Natchez Hotel':'Natchez Hotel',
+  'Van’s 1885 Bar & Grill':'Van’s 1885',
+  'Chinook Pass Route':'Chinook Pass',
+  'Bron Yr Aur Brewing Co.':'Bron Yr Aur',
+  'Infrastructure Repair Assessment':'Repair Fee',
+  'Allan Brothers Fruit':'Allan Fruit'
+});
+let boardFontFitFrame=0;
+function queueBoardFontFit(){
+  if(boardFontFitFrame)cancelAnimationFrame(boardFontFitFrame);
+  boardFontFitFrame=requestAnimationFrame(()=>{boardFontFitFrame=0;fitBoardSpaceNames();});
+}
+function fitBoardSpaceNames(){
+  const board=$('board');if(!board || !board.isConnected || !board.clientWidth)return;
+  const cells=board.querySelectorAll('.board-cell');
+  for(const cell of cells){
+    const label=cell.querySelector('.cell-name');if(!label)continue;
+    const full=label.dataset.fullName||label.textContent;
+    label.dataset.fullName=full;
+    const cellStyle=getComputedStyle(cell),labelStyle=getComputedStyle(label);
+    // Reserve the color stripe, icon/building, price, and any occupied token area.
+    const staticParts=[...cell.children].filter(child=>child!==label &&
+      !child.matches('.cell-owner,.cell-upgrades,.cell-tokens') &&
+      getComputedStyle(child).display!=='none');
+    const partHeight=staticParts.reduce((total,part)=>total+part.getBoundingClientRect().height,0);
+    const count=staticParts.length+1;
+    const gap=parseFloat(cellStyle.rowGap)||parseFloat(cellStyle.gap)||0;
+    const padding=(parseFloat(cellStyle.paddingTop)||0)+(parseFloat(cellStyle.paddingBottom)||0);
+    const occupied=cell.querySelector('.cell-tokens')?.children.length>0;
+    const tokenReserve=occupied?Math.min(10,cell.clientHeight*.13):0;
+    const available=Math.max(6,Math.floor(cell.clientHeight-partHeight-gap*(count-1)-padding-tokenReserve-3));
+    const width=label.clientWidth;
+    const isCorner=cell.classList.contains('corner');
+    const maxSize=Math.min(isCorner?12:11,Math.max(7,Math.floor(width*.19)));
+    const minSize=width<42?5:width<60?6:7;
+    label.style.maxHeight=available+'px';
+    label.style.lineHeight='1.08';
+    label.style.overflow='hidden';
+    let fitted=false;
+    // Keep complete names whenever possible. Only use a short visual label as a fallback.
+    const candidates=[full];
+    const short=SHORT_BOARD_LABELS[full];
+    if(short&&short!==full)candidates.push(short);
+    for(const candidate of candidates){
+      label.textContent=candidate;
+      for(let size=maxSize;size>=minSize;size-=.5){
+        label.style.fontSize=size+'px';
+        if(label.scrollHeight<=available+1){fitted=true;break;}
+      }
+      if(fitted)break;
+    }
+    if(!fitted){
+      // Tiny phone tiles cannot contain a complete multi-word label. Reduce only
+      // the visible board text; the full accessible/inspectable name is retained.
+      let short=SHORT_BOARD_LABELS[full]||full;
+      label.style.fontSize=minSize+'px';
+      while(short.includes(' ')&&label.scrollHeight>available+1){
+        short=short.slice(0,short.lastIndexOf(' '));
+        label.textContent=short;
+      }
+      if(label.scrollHeight>available+1){
+        // Keep a readable compact identifier rather than allowing clipped letters.
+        // The full tile name is still announced to screen readers and shown in details.
+        const initials=(SHORT_BOARD_LABELS[full]||full).split(/\s+/).map(x=>x[0]).filter(Boolean).join('').slice(0,3).toUpperCase();
+        label.textContent=initials||short.slice(0,2);
+      }
+      if(label.scrollHeight>available+1)label.textContent=label.textContent.slice(0,2);
+    }
+    label.classList.toggle('auto-shortened',label.textContent!==full);
+    label.title=full;
+  }
+}
+if(typeof window!=='undefined'){
+  window.addEventListener('resize',queueBoardFontFit,{passive:true});
+  if(typeof ResizeObserver!=='undefined'){
+    const boardFitObserver=new ResizeObserver(()=>queueBoardFontFit());
+    document.addEventListener('DOMContentLoaded',()=>{const b=$('board');if(b)boardFitObserver.observe(b);});
+  }
+}
 function renderBoard(){let html=renderMiniTown();
  for(const s of g.board){const [r,c]=boardCoords(s.index);const isCorner=[0,10,20,30].includes(s.index);const tokens=g.players.filter(p=>!p.bankrupt&&p.position===s.index).map(p=>`<span class="mini-token" title="${esc(p.name)}">${p.token}</span>`).join('');const owner=s.owner?getPlayer(s.owner):null;const gc=GROUP_COLOR[s.group]||(s.type==='TRANSPORT'?'#9b7858':s.type==='UTILITY'?'#b8aa57':s.type==='EVENT'?'#73a9a2':s.type==='TAX'?'#b97676':'#a9b4a5');html+=`<button class="board-cell ${isCorner?'corner':''} ${owner?'owned':''} ${current().position===s.index?'active':''}" data-space="${s.index}" style="grid-row:${r};grid-column:${c};--group:${gc};--owner:${owner?owner.color:gc}" title="${esc(s.name)} — ${esc(s.type)}" aria-label="${esc(s.name)}, ${isOwnable(s)?money(price(s)):s.type}, ${owner?'owned by '+esc(owner.name):'unowned'}${s.level?', ' + s.level + ' upgrades':''}"><span class="group-strip"></span>${owner?'<span class="cell-owner"></span>':''}<span class="cell-symbol" aria-hidden="true">${propertySymbol(s)}</span>${buildingMarker(s,owner)}<span class="cell-name">${esc(s.name)}</span><span class="cell-price">${isOwnable(s)?money(price(s)):s.index===0?'START':''}</span>${s.level?`<span class="cell-upgrades">${s.level===5?'★':'+'+s.level}</span>`:''}<span class="cell-tokens">${tokens}</span></button>`;}
  $('board').innerHTML=html;document.querySelectorAll('[data-space]').forEach(el=>{
@@ -357,7 +468,7 @@ function renderBoard(){let html=renderMiniTown();
   el.onclick=()=>showSpace(i);
   el.addEventListener('pointerenter',()=>showBoardPeek(i));
   el.addEventListener('focus',()=>showBoardPeek(i));
-});document.querySelectorAll('[data-town-space]').forEach(el=>{const open=()=>showSpace(Number(el.dataset.townSpace));el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});$('townExplore')?.addEventListener('click',showTownExplorer);}
+});document.querySelectorAll('[data-town-space]').forEach(el=>{const open=()=>showSpace(Number(el.dataset.townSpace));el.addEventListener('click',open);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});});$('townExplore')?.addEventListener('click',showTownExplorer);queueBoardFontFit();}
 function showBoardPeek(i){
  const s=space(i),p=s.owner?getPlayer(s.owner):null,peek=$('boardPeek');
  if(!peek)return;

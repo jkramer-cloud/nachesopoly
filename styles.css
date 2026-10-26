@@ -187,3 +187,11 @@
  #game .bottom-rail .textbtn{font-size:10px}
 }
 @media(prefers-reduced-motion:reduce){#game .rival-property,#game .portfolio-property{transition:none!important}}
+
+/* Stage 2.3.1: label fitting runs after layout; full names remain in hover/focus details. */
+#game .board-cell .cell-name{
+ width:100%;min-width:0;min-height:0;flex:0 1 auto;
+ overflow-wrap:break-word;word-break:normal;hyphens:auto;
+ text-wrap:wrap;line-height:1.08;
+}
+#game .board-cell .cell-name.auto-shortened{letter-spacing:-.01em}
