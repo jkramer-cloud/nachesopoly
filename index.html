@@ -1,21 +1,22 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#142d3a"><title>Nachesopoly · Valley Ventures — Stage 2.4</title><link rel="stylesheet" href="styles.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#142d3a"><title>Nachesopoly · Valley Ventures — Stage 2.5</title><link rel="stylesheet" href="styles.css"></head>
 <body>
 <div class="backdrop" aria-hidden="true"><div class="mist"></div></div>
 <div class="app-shell">
-<header class="masthead"><div class="mark">N<span>V</span></div><div class="identity"><div class="eyebrow">NACHES VALLEY · COMMUNITY GAME</div><h1>NACHESOPOLY <small>Valley Ventures</small></h1></div><div class="build-tag">STAGE 2.4 <span>PLAYER TOKENS</span></div></header>
+<header class="masthead"><div class="mark">N<span>V</span></div><div class="identity"><div class="eyebrow">NACHES VALLEY · COMMUNITY GAME</div><h1>NACHESOPOLY <small>Valley Ventures</small></h1></div><div class="build-tag">STAGE 2.5 <span>HOUSE RULES + BOARD</span></div></header>
 <section id="setup" class="setup panel" aria-label="New game setup">
   <div class="setup-hero"><div class="eyebrow">WELCOME TO THE VALLEY</div><h2>Make your mark on Naches.</h2><p>Acquire familiar locations, complete property groups, build improvements and outsmart your rivals. All in-game prices are fictional. This is a development preview, not a business endorsement.</p></div>
   <div class="setup-body"><div class="setup-grid">
     <label>Game format<select id="gameMode"><option value="quick">Quick Play</option><option value="full">Full Game</option></select></label>
     <label>Quick Play ending<select id="quickEnd"><option value="rounds">Fixed rounds</option><option value="time">Classroom countdown</option></select></label>
-    <label>Rounds / player<select id="roundLimit"><option>4</option><option selected>6</option><option>8</option><option>12</option></select></label>
+    <label>Rounds / player<select id="roundLimit"><option>4</option><option>6</option><option>8</option><option selected>12</option><option>16</option></select></label>
     <label>Countdown length<select id="timeLimit"><option value="15">15 minutes</option><option value="25" selected>25 minutes</option><option value="35">35 minutes</option></select></label>
     <label>Starting cash<select id="startingCash"><option value="1000">$1,000</option><option value="1500" selected>$1,500</option><option value="2000">$2,000</option></select></label>
     <label>Computer turn speed<select id="botPace"><option value="story" selected>Story pace · watch each action</option><option value="balanced">Balanced · moderate</option><option value="fast">Fast · shorter delays</option></select></label>
     <label>Computer difficulty<select id="defaultDifficulty"><option value="easy">Easy · forgiving</option><option value="normal" selected>Normal · balanced</option><option value="hard">Hard · strategic</option></select></label>
     <label>AI strategy<select id="defaultAI"><option value="strategist">Strategist</option><option value="saver">Saver</option><option value="investor">Investor</option><option value="negotiator">Negotiator</option></select></label>
-  </div><div class="setup-subhead"><h3>Players <span class="hint">2–4 total · 1–3 computers · shared device</span></h3><button id="addHuman" class="button minor" type="button">+ Human</button><button id="addBot" class="button minor" type="button">+ Computer</button></div><p class="token-setup-hint">Choose a unique illustrated token and color for each player. Decorations are just for fun and never affect gameplay.</p><div id="playerSetup" class="player-setup"></div>
+  </div><details class="house-rules panel" id="houseRuleSettings" open><summary>⚙ House Rules <span>Custom classroom settings · 10 options</span></summary><p class="subtle">Your selected rules are saved inside each match. The switches below start with the settings you requested. <strong>With first-lap buying restricted, use 12+ rounds or a classroom countdown</strong> so students have time to buy and upgrade.</p><div id="houseRuleChecks" class="house-rule-grid"></div><div class="house-rule-actions"><button class="button minor" id="requestedRules" type="button">Your chosen defaults</button><button class="button minor" id="classicRules" type="button">Traditional-style defaults</button></div></details>
+  <div class="setup-subhead"><h3>Players <span class="hint">2–4 total · 1–3 computers · shared device</span></h3><button id="addHuman" class="button minor" type="button">+ Human</button><button id="addBot" class="button minor" type="button">+ Computer</button></div><p class="token-setup-hint">Choose a unique illustrated token and color for each player. Decorations are just for fun and never affect gameplay.</p><div id="playerSetup" class="player-setup"></div>
   <div class="setup-actions"><button id="newGame" class="button primary">Start a New Game <span aria-hidden="true">→</span></button><button id="continueGame" class="button secondary">Resume Saved Match</button><span id="setupError" role="status"></span></div></div>
 </section>
 <section id="game" class="game hidden" aria-label="Nachesopoly game">
@@ -25,7 +26,8 @@
   <section id="computerRecap" class="computer-recap hidden" aria-labelledby="recapTitle" tabindex="-1"></section>
 <div class="game-columns">
   <main class="board-zone" aria-label="Game board">
-    <div class="board-wrap"><div id="board" class="board" aria-label="Forty-space property board"></div></div>
+    <div class="board-camera"><label for="boardView">Board view</label><select id="boardView" aria-label="Choose whole board or zoom to a player"><option value="whole">Whole board</option><option value="follow">Follow current player</option></select><button type="button" class="button minor" id="resetBoardView">Show whole board</button><span id="boardViewHint">All 40 spaces visible</span></div>
+    <div class="board-wrap" id="boardWrap"><div id="board" class="board" aria-label="Forty-space property board"></div></div>
     <div id="boardPeek" class="board-peek" role="status" aria-live="off">Select or point to a space to see its name, price, and owner.</div>
   </main>
   <aside class="sidebar" aria-label="Player dashboard">
@@ -44,7 +46,7 @@
 </div>
   <div class="bottom-rail"><strong>Latest:</strong><span id="lastAction">Welcome to Naches!</span><button class="textbtn" id="fullLogBtn">View transactions →</button></div>
 </section>
-<footer class="footer">Nachesopoly · Stage 2.4 development preview · School-friendly, locally themed strategy game · All financial values and events are fictional. No affiliation with pictured/named businesses.</footer>
+<footer class="footer">Nachesopoly · Stage 2.5 development preview · School-friendly, locally themed strategy game · All financial values and events are fictional. No affiliation with pictured/named businesses.</footer>
 </div>
 <div id="actionToast" class="action-toast hidden" aria-live="polite" aria-atomic="true"></div>
 <div id="diceScene" class="dice-scene hidden" aria-live="polite"><div class="dice-scene-card"><div id="diceSceneTitle" class="dice-scene-title">Rolling dice…</div><div class="dice-stage"><div class="cube" id="rollingDieOne">⚀</div><div class="cube" id="rollingDieTwo">⚀</div></div><div id="diceSceneResult" class="dice-scene-result"></div></div></div>

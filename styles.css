@@ -243,3 +243,71 @@
 @media(max-width:760px){.token-choice-grid,.token-palette,.token-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:490px){.token-choice-grid,.token-palette,.token-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.token-gallery-players{grid-template-columns:1fr}.token-option{min-height:91px}#game .cell-tokens{gap:0}.game-token--board{width:11px;height:11px;outline-width:1px;border-width:1px}.game-token--board .token-glyph{font-size:7px}.game-token--board .token-accessory{display:none}.token-customize{width:100%;font-size:12px!important}}
 @media(prefers-reduced-motion:reduce){.game-token--moving{animation:none!important}.token-option{transition:none!important}}
+
+/* Stage 2.5 — accessible house rules, player-tinted dashboards, center board guide */
+.house-rules{margin:21px 0 7px;padding:14px 17px!important;background:#eef5ee;border:1px solid #c4dacb;border-radius:14px;box-shadow:none}
+.house-rules summary{font-size:16px;font-weight:900;color:#285b4f;cursor:pointer;list-style:none;display:flex;gap:12px;align-items:center}
+.house-rules summary::-webkit-details-marker{display:none}
+.house-rules summary span{margin-left:auto;font-size:11px;color:#637a6b;font-weight:600}
+.house-rules .subtle{margin:11px 0}
+.house-rule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.setup .house-rule{display:flex;flex-direction:row;align-items:flex-start;gap:10px;padding:9px 10px;background:#fff;border:1px solid #d8e3d9;border-radius:10px;cursor:pointer;font-weight:400}
+.house-rule input{flex:0 0 19px;width:19px;height:19px;min-width:19px;margin-top:2px;accent-color:#236758}
+.house-rule b{display:block;font-size:12px;color:#315b50}
+.house-rule small{display:block;font-size:11px;font-weight:450;line-height:1.42;color:#667a72;margin-top:3px}
+.house-rule-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:11px}
+#game .turn-panel{border-top-color:var(--active-player,#c9a76e)}
+#game .turn-panel .turn-name{color:var(--active-player,#183e3e)}
+#game .turn-panel .funds-cell{background:color-mix(in srgb,var(--active-player,#2d7465) 9%,#fff)}
+#game .turn-panel .turn-actions .button.primary{background:var(--active-player,#1e655e);color:white;filter:brightness(.88);box-shadow:0 3px 0 #1b302d}
+#game #portfolioBar{border-left:5px solid var(--active-player,#2c7063)}
+#game #portfolioBar .portfolio-heading b{color:var(--active-player,#236758)}
+#game .rival-player{border-left:4px solid var(--player,#6b978b)}
+.game-token{background:radial-gradient(circle at 28% 22%,#fff9 0,transparent 45%),var(--token-color,#a35246)!important;border-color:color-mix(in srgb,var(--token-color,#a35246) 60%,#111)!important;box-shadow:inset 0 0 0 2px #fff8,0 2px 3px #0003}
+.game-token .token-glyph{filter:drop-shadow(0px 1px 1px #0008)}
+#game .board-wrap.camera-zoom{overflow:hidden}
+#game #board{transition:transform .45s ease;transform-origin:center center}
+.board-camera{width:min(100%,calc(100dvh - 167px),860px);display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0 auto 7px;background:#f5f7ed;border:1px solid #c3d4c6;padding:5px 8px;border-radius:11px;font-size:11px;color:#2d5c50}
+.board-camera label{font-weight:900}
+.board-camera select{font:700 11px system-ui,sans-serif;border:1px solid #b8cac1;border-radius:7px;background:white;padding:5px 7px;max-width:185px;min-width:130px;color:#244f4b}
+.board-camera .button{padding:5px 9px;font-size:11px}
+.board-camera #boardViewHint{margin-left:auto;font-size:10px;color:#6b7b73}
+#game .board-cell .cell-name{word-break:normal;overflow-wrap:normal;hyphens:none;line-height:1.12;font-weight:850;max-height:none;letter-spacing:-.03em}
+#game .board-cell.corner .cell-name{font-weight:900}
+.upgrade-pips{display:flex;gap:2px;align-items:center;justify-content:center;height:7px;flex:none;color:#d4aa46;text-shadow:0 0 2px #fff;background:#ffffffe0;border-radius:4px;padding:0 2px;font-size:11px;font-weight:900}
+.upgrade-pips i{display:block;width:5px;height:5px;border-radius:1px;background:var(--owner,#2b7050);border:1px solid #fff7}
+.clear-center .simple-landscape{inset:0 0 51%;opacity:.58}
+.clear-center .simple-center-info{inset:35% 5% 37%;gap:4px;z-index:1;pointer-events:none}
+.clear-center .simple-center-info strong{font-size:clamp(21px,3vw,43px)}
+.clear-center .simple-center-info .mini-overline{font-size:clamp(9px,.76vw,13px)}
+.clear-center .simple-center-info>span{font-size:clamp(8px,.9vw,14px)}
+.clear-center .simple-center-info .center-metrics{padding:4px 8px;font-size:clamp(8px,.8vw,12px)}
+.clear-center .town-explore{pointer-events:auto;padding:5px 11px!important;font-size:11px!important}
+.center-action-dock{position:absolute;bottom:2%;left:3%;width:94%;height:34%;border:1px solid #b8c7ae;background:#f9f6e9ef;border-radius:13px;box-shadow:0 3px 12px #32504321;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(110px,.95fr);grid-template-rows:1fr auto;align-items:center;padding:11px;gap:8px;z-index:2}
+.center-decks{display:flex;align-items:center;justify-content:space-around;gap:9px;min-width:0;height:100%}
+.deck-stack{position:relative;border:2px solid #f7e3b4;border-radius:9px;background:linear-gradient(150deg,#d8e6dc,#43826c);box-shadow:2px 2px 0 #d3bc86,4px 4px 0 #9e8f79,5px 6px 10px #1e302f4a;color:#133e43;min-width:0;width:min(46%,110px);height:100%;max-height:112px;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transform:rotate(-3deg);transition:transform .2s;letter-spacing:.02em}
+.deck-community{background:linear-gradient(150deg,#f2e5bc,#c69d67);transform:rotate(3deg)}
+.deck-stack:hover{transform:translateY(-4px) rotate(0)}
+.deck-stack b{font:900 clamp(8px,.85vw,13px) Georgia,serif;text-align:center;line-height:1.02}
+.deck-stack small{font-size:9px;color:#31564f;font-weight:800}
+.deck-art{font-size:clamp(14px,1.8vw,24px)}
+.jackpot-display{height:100%;width:100%;border:1px solid #beceb2;border-radius:10px;background:linear-gradient(145deg,#eaf4dc,#faf3d3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px;cursor:pointer;color:#28564a}
+.jackpot-display small{font-size:clamp(7px,.8vw,11px);font-weight:900;letter-spacing:.08em;text-align:center}
+.jackpot-display b{font:900 clamp(14px,2.5vw,30px) Georgia,serif;color:#357958}
+.jackpot-display span{font-size:9px;text-align:center;line-height:1.25}
+.corner-info-btn{grid-column:1/-1;justify-self:center;background:transparent;border:1px solid #b6c4b4;border-radius:9px;padding:4px 14px;font-size:11px;color:#2d6256;font-weight:900;cursor:pointer}
+.corner-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.corner-guide>div{background:#eaf3e8;border:1px solid #cadaaa;border-radius:12px;padding:11px}.corner-guide b{color:#2b6057}.corner-guide p{font-size:13px;line-height:1.5}
+.card-flip-in{transform-style:preserve-3d;animation:drawAndFlip 1.05s cubic-bezier(.2,.7,.3,1) both!important}
+.card-draw-back{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;flex-direction:column;background:repeating-linear-gradient(25deg,#285f63 0 20px,#306b66 21px 39px);color:#faf0c6;font:900 28px Georgia,serif;text-align:center;letter-spacing:.09em;border:10px solid #d0b875;animation:flipCardBack 1.05s linear forwards;pointer-events:none}
+.card-draw-back span{font-size:75px;color:#f1cc67;margin:15px}
+@keyframes drawAndFlip{0%{transform:translate(0,80px) scale(.65) rotate(-25deg) rotateY(0deg);opacity:.5}25%{transform:translateY(-28px) rotate(10deg) rotateY(0deg);opacity:1}52%{transform:translateY(0) rotate(0) rotateY(80deg)}67%{transform:rotateY(0)}100%{transform:none}}
+@keyframes flipCardBack{0%,47%{opacity:1}57%,100%{opacity:0;visibility:hidden}}
+body:has(#eventPanel[data-deck="Community Events"]:not(.hidden)) .deck-community,body:has(#eventPanel[data-deck="Valley Opportunity"]:not(.hidden)) .deck-valley{animation:shuffleStack .62s ease-in-out 2}
+@keyframes shuffleStack{0%,100%{translate:0 0}25%{translate:9px -4px;rotate:9deg}60%{translate:-9px 4px;rotate:-8deg}}
+@media(max-width:980px){.board-camera{width:min(100%,780px)}}
+@media(max-width:650px){.house-rule-grid{grid-template-columns:1fr}.house-rules summary{font-size:14px}.house-rules summary span{font-size:10px}.board-camera{width:100%;gap:5px}.board-camera #boardViewHint{width:100%;margin:0}.center-action-dock{height:42%;bottom:1%;gap:3px;padding:4px;border-radius:6px;grid-template-columns:minmax(0,1.6fr) minmax(45px,.9fr)}.center-decks{gap:4px}.deck-stack{min-height:35px;max-height:65px;border-width:1px;box-shadow:1px 1px 0 #cdb99c,2px 2px 0 #aa916d;gap:1px;border-radius:4px}.deck-stack b{font-size:6px}.deck-stack small,.jackpot-display span{display:none}.deck-art{font-size:12px}.jackpot-display{border-radius:5px;gap:1px}.jackpot-display small{font-size:6px}.jackpot-display b{font-size:13px}.corner-info-btn{font-size:7px;padding:2px 6px}.clear-center .simple-center-info{inset:33% 3% 43%;gap:1px}.clear-center .simple-center-info strong{font-size:clamp(10px,3.8vw,20px)}.clear-center .simple-center-info>span{font-size:6px}.clear-center .simple-center-info .mini-overline{font-size:6px}.clear-center .center-metrics{font-size:6px;padding:1px 4px}.clear-center .town-explore{font-size:7px!important;padding:2px 4px!important}.upgrade-pips{height:4px;gap:0}.upgrade-pips i{width:3px;height:3px}.corner-guide{grid-template-columns:1fr}.card-draw-back{font-size:17px}.card-draw-back span{font-size:55px}}
+@media(prefers-reduced-motion:reduce){#game #board,.card-flip-in,.card-draw-back,.deck-stack{transition:none!important;animation:none!important}.card-draw-back{display:none!important}}
+
+.event-card-view{position:relative}
+.lap-reminder{margin:9px 0 0;font-size:11px;color:#805f28;background:#fff2d5;border-radius:8px;padding:6px 9px;border:1px solid #eddaa6}
+.asset-explanation{display:block;margin-top:3px;color:#537e70;font-size:10px;line-height:1.35}
