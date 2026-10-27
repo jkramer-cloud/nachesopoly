@@ -1,10 +1,41 @@
 'use strict';
-/* Nachesopoly Stage 2.3 release QA candidate. Game engine and Stage 2.2 hybrid dashboard. */
+/* Nachesopoly Stage 2.4 token workshop — includes Stage 2.3.1 board text-fit. */
 const $=id=>document.getElementById(id);
 let portfolioExpanded=true;
 const STORE='nachesopoly_stage1_v1'; // Historical key retained to keep previous saved games compatible.
-const TOKEN_SET=['🍎','🐻','🚍','🚜','🦌','🚚'];
-const COLORS=['#b65849','#3b83aa','#ad7752','#558c64','#b27aaf','#d19747'];
+const TOKEN_SET=['🍎','🐻','🚍','🚜','🦌','🚚']; // Old saved-game compatibility.
+const COLORS=['#b64b47','#327eae','#b27c2c','#307e56','#855aab','#147a79','#bb5289','#46566e'];
+const TOKEN_CHOICES=[
+ {id:'apple',icon:'🍎',name:'Harvest Apple',story:'A classic Naches Valley harvest symbol.'},
+ {id:'bear',icon:'🐻',name:'Mountain Bear',story:'A friendly foothills companion.'},
+ {id:'bus',icon:'🚌',name:'School Bus',story:'Rolling through the valley.'},
+ {id:'tractor',icon:'🚜',name:'Orchard Tractor',story:'Ready for the next harvest.'},
+ {id:'elk',icon:'🦌',name:'Valley Elk',story:'A visitor from the nearby forests.'},
+ {id:'truck',icon:'🛻',name:'Farm Pickup',story:'A useful valley workhorse.'},
+ {id:'mountain',icon:'🏔️',name:'Cascade Peaks',story:'The mountains above the valley.'},
+ {id:'blossom',icon:'🌸',name:'Apple Blossom',story:'Springtime in the orchards.'},
+ {id:'coffee',icon:'☕',name:'Coffee Cup',story:'A stop at a local cafe.'},
+ {id:'train',icon:'🚂',name:'Depot Train',story:'Inspired by the Naches depot.'},
+ {id:'fish',icon:'🐟',name:'River Fish',story:'A reminder of the Naches River.'},
+ {id:'boot',icon:'🥾',name:'Hiking Boot',story:'Explore trails and scenery.'}
+];
+const TOKEN_COLORS=[
+ {name:'Apple red',hex:COLORS[0]},{name:'River blue',hex:COLORS[1]},
+ {name:'Harvest amber',hex:COLORS[2]},{name:'Forest green',hex:COLORS[3]},
+ {name:'Evening violet',hex:COLORS[4]},{name:'Mountain teal',hex:COLORS[5]},
+ {name:'Blossom pink',hex:COLORS[6]},{name:'Slate',hex:COLORS[7]}
+];
+const TOKEN_ACCESSORIES=[{id:'none',name:'Classic',icon:''},{id:'star',name:'Lucky star',icon:'✦'},{id:'scarf',name:'Valley ribbon',icon:'◆'},{id:'spark',name:'Sparkle',icon:'✧'}];
+const tokenChoice=id=>TOKEN_CHOICES.find(t=>t.id===id)||TOKEN_CHOICES[0];
+const tokenAccessory=id=>TOKEN_ACCESSORIES.find(a=>a.id===id)||TOKEN_ACCESSORIES[0];
+const safeTokenColor=color=>typeof color==='string'&&/^#[0-9a-fA-F]{6}$/.test(color)?color:COLORS[0];
+function tokenHTML(p,kind='medium',moving=false){
+ const choice=tokenChoice(p.tokenId||TOKEN_CHOICES.find(t=>t.icon===p.token)?.id), accessory=tokenAccessory(p.accessory);
+ return `<span class="game-token game-token--${kind}${moving?' game-token--moving':''}" style="--token-color:${safeTokenColor(p.color)}" role="img" aria-label="${esc(choice.name)} token${accessory.id!=='none'?' with '+esc(accessory.name):''}"><span class="token-glyph" aria-hidden="true">${choice.icon}</span>${accessory.icon?`<span class="token-accessory" aria-hidden="true">${accessory.icon}</span>`:''}</span>`;
+}
+function availableToken(i){return TOKEN_CHOICES.find(t=>!setupPlayers.some((p,j)=>i!==j&&p.tokenId===t.id))?.id||TOKEN_CHOICES[0].id;}
+function availableColor(i){return TOKEN_COLORS.find(c=>!setupPlayers.some((p,j)=>i!==j&&p.color===c.hex))?.hex||COLORS[i%COLORS.length];}
+
 const GROUPS=['Brown','Light blue','Pink','Orange','Red','Yellow','Green','Dark blue'];
 const GROUP_COLOR={'Brown':'#93603b','Light blue':'#8fcbe1','Pink':'#cb8baa','Orange':'#e99d51','Red':'#d76565','Yellow':'#e7c562','Green':'#72a47a','Dark blue':'#4066a6'};
 const PROPERTY_INDICES=[1,3,6,8,9,11,13,14,16,18,19,21,23,24,26,27,29,31,32,34,37,39];
@@ -102,18 +133,23 @@ function finishCardEffect(card,depth){const p=current(),e=g.effects[p.id];const 
  case 'gamble':{const won=Math.random()<0.5;finishCardEffect(won?{kind:'gain',amount:card.win,title:'Lucky outcome'}:{kind:'pay',amount:card.lose,title:'Unlucky outcome'},depth);break;}
  default:finish();}}
 function resolveCard(choiceIndex=0){if(!g||g.phase!=='card'||!g.activeCard)return;const a=g.activeCard,c=EVENTS[a.deck][a.index];if(c.kind==='choice'){const chosen=c.choices[Math.min(c.choices.length-1,Math.max(0,choiceIndex))];ledger(`${current().name} chose: ${chosen.label}.`,'event');g.activeCard=null;finishCardEffect(chosen,a.depth);return;}g.activeCard=null;finishCardEffect(c,a.depth);}
+function showTokenGallery(){if(!g)return;
+ const players=g.players.map(p=>`<div class="token-gallery-player">${tokenHTML(p,'large')}<div><b>${esc(p.name)}</b><small>${esc(tokenChoice(p.tokenId).name)} · ${esc(TOKEN_COLORS.find(c=>c.hex===p.color)?.name||'Player color')}${p.accessory!=='none'?' · '+esc(tokenAccessory(p.accessory).name):''}</small></div></div>`).join('');
+ const library=TOKEN_CHOICES.map(t=>`<div class="token-library-item"><span>${t.icon}</span><b>${esc(t.name)}</b></div>`).join('');
+ showModal('Player tokens',`<p class="subtle">Tokens are cosmetic only. Each player chooses a unique piece and color before starting a new game; existing matches keep their saved choices.</p><div class="token-gallery-players">${players}</div><h3 class="token-picker-title">Naches token collection</h3><div class="token-library-grid">${library}</div><p class="subtle">Achievement-based collectible unlocks are planned for a later update; all 12 starter tokens are currently available.</p>`);
+}
 function showCardGallery(){if(!g)return;ensureCardState();let html='<p class="subtle">Cards revealed in this match appear below. Others remain surprises. Rare cards may take several matches to see.</p>';for(const [deck,cards] of Object.entries(EVENTS)){const seen=g.seenCards[deck]||[];html+=`<h3>${esc(deck)} · ${seen.length} / 24 discovered</h3><div class="gallery-grid">`+cards.map((c,i)=>`<div class="gallery-card ${seen.includes(i)?'':'undiscovered'}">${seen.includes(i)?`<span class="gallery-icon">${esc(c.icon||'🍎')}</span><b>${esc(c.title)}</b><small>${esc(c.text)}</small>`:'<span class="gallery-icon">❔</span><b>Undiscovered</b>'}</div>`).join('')+'</div>';}showModal('Naches Event Card Gallery',html);}
 
-let g=null,setupPlayers=[{name:'Player 1',human:true},{name:'Computer 1',human:false}];
+let g=null,setupPlayers=[{name:'Player 1',human:true,tokenId:'apple',color:COLORS[0],accessory:'none'},{name:'Computer 1',human:false,tokenId:'bear',color:COLORS[1],accessory:'none'}];
 let inspected=null,botTimer=null,modalState=null,shownRecapId=null;
-let presentationBusy=false, presentationTimers=[],toastTimer=null;
+let presentationBusy=false, presentationTimers=[],toastTimer=null,movingPlayerId=null;
 const FACES=['⚀','⚁','⚂','⚃','⚄','⚅'];
 const sleep=ms=>new Promise(resolve=>{const handle=setTimeout(resolve,ms);presentationTimers.push(handle);});
 function paceMs(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return 0;return g?.aiPace==='fast'?110:g?.aiPace==='balanced'?215:380;}
 function toast(message){if(!g)return;const el=$('actionToast');el.textContent=message;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),g.aiPace==='fast'?1300:2200);}
 async function animatedDice(d1,d2,player){const box=$('diceScene'),a=$('rollingDieOne'),b=$('rollingDieTwo');box.classList.remove('hidden');$('diceSceneTitle').textContent=player.name+' rolls the dice';$('diceSceneResult').textContent='';a.className='cube tumbling';b.className='cube tumbling';const duration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:g.aiPace==='fast'?320:g.aiPace==='balanced'?650:1050;const frames=Math.max(1,Math.floor(duration/110));for(let j=0;j<frames;j++){a.textContent=FACES[Math.floor(Math.random()*6)];b.textContent=FACES[Math.floor(Math.random()*6)];await sleep(110);}a.textContent=FACES[d1-1];b.textContent=FACES[d2-1];a.className='cube settled';b.className='cube settled';$('diceSceneResult').textContent=d1+' + '+d2+' = '+(d1+d2)+(d1===d2?' · DOUBLES!':'');await sleep(duration===0?100:g.aiPace==='fast'?220:630);box.classList.add('hidden');}
 function endPresentation(){presentationBusy=false;}
-function cancelPresentation(){presentationBusy=false;for(const t of presentationTimers)clearTimeout(t);presentationTimers=[];$('diceScene').classList.add('hidden');}
+function cancelPresentation(){presentationBusy=false;movingPlayerId=null;for(const t of presentationTimers)clearTimeout(t);presentationTimers=[];$('diceScene').classList.add('hidden');}
 
 const AI_PACE_MS={story:1250,balanced:750,fast:280};
 const money=n=>'$'+Number(n||0).toLocaleString('en-US');
@@ -208,18 +244,42 @@ function setupInit(){renderPlayerSetup();$('addHuman').onclick=()=>addPlayer(tru
  ['gameMode','quickEnd','roundLimit','timeLimit'].forEach(id=>$(id).addEventListener('change',setupOptions));
  $('newBtn').onclick=()=>{if(confirm('Return to main menu? Your match will be saved.')){cancelPresentation();safeSave();g=null;$('game').classList.add('hidden');$('setup').classList.remove('hidden');updateContinue();}};
  $('aiPaceLive').onchange=e=>{if(g){g.aiPace=e.target.value;commit();}}; $('recapBtn').onclick=showPreviousBotRecap;
- $('cardGalleryBtn').onclick=showCardGallery;$('helpBtn').onclick=showRules;$('saveBtn').onclick=saveDialog;$('historyBtn').onclick=showHistory;$('fullLogBtn').onclick=showHistory;
+ $('cardGalleryBtn').onclick=showCardGallery;$('tokenGalleryBtn').onclick=showTokenGallery;$('helpBtn').onclick=showRules;$('saveBtn').onclick=saveDialog;$('historyBtn').onclick=showHistory;$('fullLogBtn').onclick=showHistory;
  $('tradeBtn').onclick=()=>tradeDialog();$('closeModal').onclick=()=>closeModal();$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
  setInterval(()=>{if(!g||g.phase==='ended')return;if(presentationBusy){g.clockAnchor=Date.now();return;}if(g.phase==='recap'){g.clockAnchor=Date.now();return;}if(g.mode==='quick'&&g.quickEnd==='time'&&g.startedAt){const diff=Math.max(0,(Date.now()-g.clockAnchor)/1000);if(diff>=1){g.elapsedSeconds+=Math.floor(diff);g.clockAnchor=Date.now();if(!g.finalRoundTarget&&g.elapsedSeconds>=g.timeLimit*60){g.finalRoundTarget=Math.max(...alive().map(p=>p.turnsTaken));if(g.finalRoundTarget<1)g.finalRoundTarget=1;ledger('Time expired: finish the current round for equal turns.','time');commit();}else{if(g.elapsedSeconds%10===0)safeSave();renderHUD();}}}},1000);
  updateContinue();setupOptions();}
 function setupOptions(){const quick=$('gameMode').value==='quick';$('quickEnd').disabled=!quick;$('roundLimit').disabled=!quick||$('quickEnd').value!=='rounds';$('timeLimit').disabled=!quick||$('quickEnd').value!=='time';}
-function renderPlayerSetup(){$('playerSetup').innerHTML=setupPlayers.map((p,i)=>`<div class="setup-player"><span class="token-round" style="background:${COLORS[i]}22">${TOKEN_SET[i]}</span><div style="min-width:0;flex:1"><div class="type">${p.human?'HUMAN':'COMPUTER'} · PLAYER ${i+1}</div><input aria-label="Player ${i+1} name" value="${esc(p.name)}" data-pname="${i}" maxlength="21"></div>${setupPlayers.length>2?`<button class="remove" aria-label="Remove ${esc(p.name)}" data-remove="${i}">×</button>`:''}</div>`).join('');
+function renderPlayerSetup(){
+ $('playerSetup').innerHTML=setupPlayers.map((p,i)=>`<div class="setup-player token-setup-player">${tokenHTML(p,'large')}<div class="setup-player-info"><div class="type">${p.human?'HUMAN':'COMPUTER'} · PLAYER ${i+1}</div><input aria-label="Player ${i+1} name" value="${esc(p.name)}" data-pname="${i}" maxlength="21"><div class="token-selected-name">${esc(tokenChoice(p.tokenId).name)} · ${esc(TOKEN_COLORS.find(c=>c.hex===p.color)?.name||'Player color')}</div></div><button class="button minor token-customize" type="button" data-customize="${i}" aria-label="Customize player ${i+1} token">Choose token</button>${setupPlayers.length>2?`<button class="remove" aria-label="Remove ${esc(p.name)}" data-remove="${i}">×</button>`:''}</div>`).join('');
  document.querySelectorAll('[data-pname]').forEach(x=>x.addEventListener('input',e=>setupPlayers[Number(e.target.dataset.pname)].name=e.target.value));
- document.querySelectorAll('[data-remove]').forEach(x=>x.onclick=()=>{setupPlayers.splice(+x.dataset.remove,1);renderPlayerSetup();});$('addHuman').disabled=setupPlayers.length>=4;$('addBot').disabled=setupPlayers.length>=4;}
-function addPlayer(human){if(setupPlayers.length>=4)return;setupPlayers.push({name:human?'Player '+(setupPlayers.filter(p=>p.human).length+1):'Computer '+(setupPlayers.filter(p=>!p.human).length+1),human});renderPlayerSetup();}
+ document.querySelectorAll('[data-customize]').forEach(x=>x.onclick=()=>showTokenPicker(Number(x.dataset.customize)));
+ document.querySelectorAll('[data-remove]').forEach(x=>x.onclick=()=>{setupPlayers.splice(+x.dataset.remove,1);renderPlayerSetup();});
+ $('addHuman').disabled=setupPlayers.length>=4;$('addBot').disabled=setupPlayers.length>=4;
+}
+function showTokenPicker(i){
+ const p=setupPlayers[i];if(!p)return;
+ const usedTokens=new Set(setupPlayers.filter((_,j)=>j!==i).map(x=>x.tokenId));
+ const usedColors=new Set(setupPlayers.filter((_,j)=>j!==i).map(x=>x.color));
+ const tokens=TOKEN_CHOICES.map(t=>`<button type="button" class="token-option ${t.id===p.tokenId?'selected':''}" data-pick-token="${t.id}" aria-pressed="${t.id===p.tokenId}" ${usedTokens.has(t.id)?'disabled title="Another player is using this token"':''}><span class="token-pick-art">${t.icon}</span><strong>${esc(t.name)}</strong><small>${usedTokens.has(t.id)?'In use':esc(t.story)}</small></button>`).join('');
+ const colors=TOKEN_COLORS.map(c=>`<button type="button" class="token-color-choice ${c.hex===p.color?'selected':''}" data-pick-color="${c.hex}" style="--swatch:${c.hex}" aria-label="${esc(c.name)}${usedColors.has(c.hex)?' (in use)':''}" aria-pressed="${c.hex===p.color}" ${usedColors.has(c.hex)?'disabled':''}><span></span><small>${esc(c.name)}</small></button>`).join('');
+ const accessories=TOKEN_ACCESSORIES.map(a=>`<button type="button" class="token-accessory-choice ${a.id===p.accessory?'selected':''}" data-pick-accessory="${a.id}" aria-pressed="${a.id===p.accessory}">${a.icon||'◯'} ${esc(a.name)}</button>`).join('');
+ showModal('Choose player '+(i+1)+' token',`<p class="subtle">Pick a different valley token and player color for each competitor. All tokens play exactly the same; no advantage is attached to a look.</p><div class="token-picker-preview" id="tokenPickerPreview">${tokenHTML(p,'hero')}<div><b>${esc(p.name)}</b><small>${esc(tokenChoice(p.tokenId).name)}</small></div></div><h3 class="token-picker-title">Choose a token · 12 designs</h3><div class="token-choice-grid">${tokens}</div><h3 class="token-picker-title">Player color</h3><div class="token-palette">${colors}</div><h3 class="token-picker-title">Token decoration</h3><div class="token-accessory-list">${accessories}</div><p id="tokenPickStatus" class="subtle" role="status">Other players' tokens and colors are unavailable to prevent confusion.</p><button id="tokenDone" type="button" class="button primary token-done">Done customizing</button>`);
+ const refresh=()=>{
+  $('tokenPickerPreview').innerHTML=`${tokenHTML(p,'hero')}<div><b>${esc(p.name)}</b><small>${esc(tokenChoice(p.tokenId).name)}</small></div>`;
+  $('modalBody').querySelectorAll('[data-pick-token]').forEach(b=>{const selected=b.dataset.pickToken===p.tokenId;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));});
+  $('modalBody').querySelectorAll('[data-pick-color]').forEach(b=>{const selected=b.dataset.pickColor===p.color;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));});
+  $('modalBody').querySelectorAll('[data-pick-accessory]').forEach(b=>{const selected=b.dataset.pickAccessory===p.accessory;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',String(selected));});
+  renderPlayerSetup();
+ };
+ $('modalBody').querySelectorAll('[data-pick-token]').forEach(b=>b.onclick=()=>{p.tokenId=b.dataset.pickToken;refresh();});
+ $('modalBody').querySelectorAll('[data-pick-color]').forEach(b=>b.onclick=()=>{p.color=b.dataset.pickColor;refresh();});
+ $('modalBody').querySelectorAll('[data-pick-accessory]').forEach(b=>b.onclick=()=>{p.accessory=b.dataset.pickAccessory;refresh();});
+ $('tokenDone').onclick=closeModal;
+}
+function addPlayer(human){if(setupPlayers.length>=4)return;const i=setupPlayers.length;setupPlayers.push({name:human?'Player '+(setupPlayers.filter(p=>p.human).length+1):'Computer '+(setupPlayers.filter(p=>!p.human).length+1),human,tokenId:availableToken(i),color:availableColor(i),accessory:'none'});renderPlayerSetup();}
 function updateContinue(){let save;try{save=JSON.parse(localStorage.getItem(STORE)||'null');}catch(e){}$('continueGame').disabled=!validateState(save);$('continueGame').textContent=validateState(save)?`Resume Saved Match · ${save.round||1}`:'Resume Saved Match';}
 function startMatch(){cancelPresentation();if(setupPlayers.length<2||setupPlayers.length>4){$('setupError').textContent='Choose 2–4 players.';return;}if(!setupPlayers.some(p=>p.human)){$('setupError').textContent='Include at least one human player.';return;}
- g={version:1,board:createBoard(),players:setupPlayers.map((p,i)=>({id:'p'+i,name:(p.name||'Player '+(i+1)).trim().slice(0,21),human:p.human,personality:!p.human?$('defaultAI').value:'human',difficulty:$('defaultDifficulty').value,token:TOKEN_SET[i],color:COLORS[i],cash:Number($('startingCash').value),position:0,turnsTaken:0,held:0,holdCards:0,bankrupt:false,stats:{rentPaid:0,rentCollected:0,purchases:0,upgrades:0,trades:0,auctions:0}})),turnIndex:0,mode:$('gameMode').value,quickEnd:$('quickEnd').value,roundLimit:Number($('roundLimit').value),timeLimit:Number($('timeLimit').value),startingCash:Number($('startingCash').value),startIncome:200,round:1,phase:'roll',doubleStreak:0,extra:false,lastDice:[0,0],pending:null,debt:null,auction:null,log:[],last:'Welcome to the Naches Edition!',elapsedSeconds:0,clockAnchor:Date.now(),startedAt:Date.now(),finalRoundTarget:null,decks:null,seenCards:null,effects:null,activeCard:null,storageIssue:null,aiPace:$('botPace').value,botTurn:null,botRecap:null,recentBotRecaps:[]};
+ g={version:1,board:createBoard(),players:setupPlayers.map((p,i)=>({id:'p'+i,name:(p.name||'Player '+(i+1)).trim().slice(0,21),human:p.human,personality:!p.human?$('defaultAI').value:'human',difficulty:$('defaultDifficulty').value,token:tokenChoice(p.tokenId).icon,tokenId:p.tokenId,color:p.color,accessory:p.accessory||'none',cash:Number($('startingCash').value),position:0,turnsTaken:0,held:0,holdCards:0,bankrupt:false,stats:{rentPaid:0,rentCollected:0,purchases:0,upgrades:0,trades:0,auctions:0}})),turnIndex:0,mode:$('gameMode').value,quickEnd:$('quickEnd').value,roundLimit:Number($('roundLimit').value),timeLimit:Number($('timeLimit').value),startingCash:Number($('startingCash').value),startIncome:200,round:1,phase:'roll',doubleStreak:0,extra:false,lastDice:[0,0],pending:null,debt:null,auction:null,log:[],last:'Welcome to the Naches Edition!',elapsedSeconds:0,clockAnchor:Date.now(),startedAt:Date.now(),finalRoundTarget:null,decks:null,seenCards:null,effects:null,activeCard:null,storageIssue:null,aiPace:$('botPace').value,botTurn:null,botRecap:null,recentBotRecaps:[]};
  ensureCardState();ledger('Match started. '+g.players.length+' players are ready.');enterGame();commit();}
 function loadMatch(){cancelPresentation();try{const save=JSON.parse(localStorage.getItem(STORE));if(!validateState(save))throw Error('Invalid save');g=save;normalizeLoadedGame();if(!current().human&&g.phase!=='recap'&&!g.botTurn)beginBotTurn();enterGame();commit();if(g.pendingTrade&&validTrade(g.pendingTrade)&&getPlayer(g.pendingTrade.to).human)showTradeAcceptance(g.pendingTrade);}catch(e){$('setupError').textContent='Saved match could not be loaded. You can start a new game.';}}
 function validateState(s){
@@ -246,6 +306,11 @@ function normalizeLoadedGame(){
   for(const k of ['rentPaid','rentCollected','purchases','upgrades','trades','auctions'])if(!Number.isFinite(p.stats[k]))p.stats[k]=0;
   if(!Number.isFinite(p.holdCards))p.holdCards=0;
   if(!Number.isFinite(p.held))p.held=0;
+  // Older saves used an emoji as their only token field; preserve the original piece.
+  if(!TOKEN_CHOICES.some(t=>t.id===p.tokenId))p.tokenId=TOKEN_CHOICES.find(t=>t.icon===p.token)?.id||TOKEN_CHOICES[Math.max(0,TOKEN_SET.indexOf(p.token))]?.id||TOKEN_CHOICES[0].id;
+  if(!TOKEN_ACCESSORIES.some(a=>a.id===p.accessory))p.accessory='none';
+  if(typeof p.color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(p.color))p.color=COLORS[g.players.indexOf(p)%COLORS.length];
+  p.token=tokenChoice(p.tokenId).icon;
  }
  ensureCardState();
  g.clockAnchor=Date.now();
@@ -257,7 +322,7 @@ function resolveDice(d1,d2){const p=current();const sum=d1+d2;g.lastDice=[d1,d2]
  if(p.held>0){if(d1===d2){p.held=0;g.doubleStreak=0;g.extra=false;ledger(`${p.name} rolled doubles and escaped the detour.`);moveBy(p,sum,false);return;}p.held++;if(p.held>=3){p.held=0;g.extra=false;makePayment(p.id,null,50,'Third unsuccessful detour roll',()=>moveBy(p,sum,false));return;}ledger(`${p.name} is still on the detour (${p.held}/3).`);g.phase='manage';commit();return;}
  g.doubleStreak=d1===d2?g.doubleStreak+1:0;g.extra=(d1===d2);if(g.doubleStreak>=3){g.extra=false;sendToHold(p,'Three consecutive doubles');commit();return;}moveBy(p,sum,true);}
 async function moveBy(p,count,grantStart){
- const old=p.position,match=g;presentationBusy=true;clearTimeout(botTimer);const steps=Math.max(0,Math.min(40,count));
+ const old=p.position,match=g;presentationBusy=true;movingPlayerId=p.id;clearTimeout(botTimer);const steps=Math.max(0,Math.min(40,count));
  for(let i=1;i<=steps;i++){
   if(g!==match)return;
   p.position=(old+i)%40;
@@ -269,7 +334,7 @@ async function moveBy(p,count,grantStart){
  p.position=(old+count)%40;
  const landing=document.querySelector(`[data-space="${p.position}"]`);landing?.classList.remove('traveling');landing?.classList.add('landing');
  ledger(`${p.name} arrived at ${space(p.position).name}.`);toast(`${p.token} ${p.name} landed on ${space(p.position).name}`);
- await sleep(paceMs()*1.5);if(g!==match)return;endPresentation();land(p,0);
+ await sleep(paceMs()*1.5);if(g!==match)return;movingPlayerId=null;endPresentation();land(p,0);
 }
 function moveTo(p,i){toast(`${p.token} Travel to ${space(i).name}`);if(i<=p.position&&i===0){p.cash+=g.startIncome;ledger(`${p.name} collected ${money(g.startIncome)} for passing Start.`,'income');}p.position=i;ledger(`${p.name} moved to ${space(i).name}.`);land(p,1);}
 function sendToHold(p,reason){p.position=10;p.held=1;g.doubleStreak=0;g.extra=false;ledger(`${p.name} enters the Scenic Detour. ${reason}.`,'hold');g.phase='manage';}
@@ -345,7 +410,7 @@ function renderPortfolio(){
    const gc=GROUP_COLOR[s.group]||(s.type==='TRANSPORT'?'#9b7858':'#b8aa57');
    return `<button class="portfolio-property" data-portfolio="${s.index}" style="--group:${gc}" aria-label="${esc(s.name)}; ${s.mortgaged?'mortgaged':s.level===5?'landmark':s.level+' improvements'}"><span class="portfolio-group"></span><span class="portfolio-property-symbol" aria-hidden="true">${propertySymbol(s)}</span><span class="portfolio-property-name">${esc(s.name)}</span><span class="portfolio-property-meta">${s.mortgaged?'Mortgaged':s.level===5?'★ Landmark':s.level?'↑ Level '+s.level:'Owned'} · ${money(price(s))}</span></button>`;
  }).join(''):'<div class="portfolio-empty">No property cards yet. Purchase a space to add it here.</div>';
- $('portfolioBar').innerHTML=`<div class="portfolio-heading"><span class="portfolio-avatar" style="background:${p.color}" aria-hidden="true">${p.token}</span><div class="portfolio-title"><b>My property cards</b><small>${esc(p.name)} · ${mine.length} owned · ${money(worth(p))} net worth</small></div><button class="portfolio-toggle" id="portfolioToggle" type="button" aria-expanded="${portfolioExpanded}" aria-controls="activePortfolioCards">${portfolioExpanded?'Hide':'Show'} cards ${portfolioExpanded?'−':'+'}</button></div><div id="activePortfolioCards" class="portfolio-list ${portfolioExpanded?'':'collapsed'}">${cards}</div>`;
+ $('portfolioBar').innerHTML=`<div class="portfolio-heading">${tokenHTML(p,'medium')}<div class="portfolio-title"><b>My property cards</b><small>${esc(p.name)} · ${mine.length} owned · ${money(worth(p))} net worth</small></div><button class="portfolio-toggle" id="portfolioToggle" type="button" aria-expanded="${portfolioExpanded}" aria-controls="activePortfolioCards">${portfolioExpanded?'Hide':'Show'} cards ${portfolioExpanded?'−':'+'}</button></div><div id="activePortfolioCards" class="portfolio-list ${portfolioExpanded?'':'collapsed'}">${cards}</div>`;
  $('portfolioToggle').onclick=()=>{portfolioExpanded=!portfolioExpanded;renderPortfolio()};
  $('portfolioBar').querySelectorAll('[data-portfolio]').forEach(b=>b.onclick=()=>showSpace(Number(b.dataset.portfolio)));
 }
@@ -462,7 +527,7 @@ if(typeof window!=='undefined'){
   }
 }
 function renderBoard(){let html=renderMiniTown();
- for(const s of g.board){const [r,c]=boardCoords(s.index);const isCorner=[0,10,20,30].includes(s.index);const tokens=g.players.filter(p=>!p.bankrupt&&p.position===s.index).map(p=>`<span class="mini-token" title="${esc(p.name)}">${p.token}</span>`).join('');const owner=s.owner?getPlayer(s.owner):null;const gc=GROUP_COLOR[s.group]||(s.type==='TRANSPORT'?'#9b7858':s.type==='UTILITY'?'#b8aa57':s.type==='EVENT'?'#73a9a2':s.type==='TAX'?'#b97676':'#a9b4a5');html+=`<button class="board-cell ${isCorner?'corner':''} ${owner?'owned':''} ${current().position===s.index?'active':''}" data-space="${s.index}" style="grid-row:${r};grid-column:${c};--group:${gc};--owner:${owner?owner.color:gc}" title="${esc(s.name)} — ${esc(s.type)}" aria-label="${esc(s.name)}, ${isOwnable(s)?money(price(s)):s.type}, ${owner?'owned by '+esc(owner.name):'unowned'}${s.level?', ' + s.level + ' upgrades':''}"><span class="group-strip"></span>${owner?'<span class="cell-owner"></span>':''}<span class="cell-symbol" aria-hidden="true">${propertySymbol(s)}</span>${buildingMarker(s,owner)}<span class="cell-name">${esc(s.name)}</span><span class="cell-price">${isOwnable(s)?money(price(s)):s.index===0?'START':''}</span>${s.level?`<span class="cell-upgrades">${s.level===5?'★':'+'+s.level}</span>`:''}<span class="cell-tokens">${tokens}</span></button>`;}
+ for(const s of g.board){const [r,c]=boardCoords(s.index);const isCorner=[0,10,20,30].includes(s.index);const occupants=g.players.filter(p=>!p.bankrupt&&p.position===s.index);const tokens=occupants.map(p=>tokenHTML(p,'board',movingPlayerId===p.id)).join('');const owner=s.owner?getPlayer(s.owner):null;const gc=GROUP_COLOR[s.group]||(s.type==='TRANSPORT'?'#9b7858':s.type==='UTILITY'?'#b8aa57':s.type==='EVENT'?'#73a9a2':s.type==='TAX'?'#b97676':'#a9b4a5');html+=`<button class="board-cell ${isCorner?'corner':''} ${owner?'owned':''} ${current().position===s.index?'active':''}" data-space="${s.index}" style="grid-row:${r};grid-column:${c};--group:${gc};--owner:${owner?owner.color:gc}" title="${esc(s.name)} — ${esc(s.type)}" aria-label="${esc(s.name)}, ${isOwnable(s)?money(price(s)):s.type}, ${owner?'owned by '+esc(owner.name):'unowned'}${s.level?', ' + s.level + ' upgrades':''}${occupants.length?', tokens: '+esc(occupants.map(p=>p.name+' ('+tokenChoice(p.tokenId).name+')').join(', ')):''}"><span class="group-strip"></span>${owner?'<span class="cell-owner"></span>':''}<span class="cell-symbol" aria-hidden="true">${propertySymbol(s)}</span>${buildingMarker(s,owner)}<span class="cell-name">${esc(s.name)}</span><span class="cell-price">${isOwnable(s)?money(price(s)):s.index===0?'START':''}</span>${s.level?`<span class="cell-upgrades">${s.level===5?'★':'+'+s.level}</span>`:''}<span class="cell-tokens">${tokens}</span></button>`;}
  $('board').innerHTML=html;document.querySelectorAll('[data-space]').forEach(el=>{
   const i=Number(el.dataset.space);
   el.onclick=()=>showSpace(i);
@@ -484,12 +549,12 @@ function renderPlayers(){
  const rivals=g.players.filter(p=>p.id!==current().id);
  $('playerCards').innerHTML=rivals.map(p=>{
   const own=owned(p.id),groups=own.map(s=>`<button type="button" class="rival-property" data-rival-space="${s.index}" style="--group:${GROUP_COLOR[s.group]||(s.type==='TRANSPORT'?'#a18461':'#c5b35f')}" aria-label="Inspect ${esc(s.name)} owned by ${esc(p.name)}" title="${esc(s.name)}${s.level?' · Level '+s.level:''}">${esc(s.name)}${s.level?` <b>${s.level===5?'★':'+'+s.level}</b>`:''}</button>`).join('');
-  return `<article class="rival-player ${p.bankrupt?'bankrupt':''}" style="--player:${p.color}"><div class="rival-top"><span class="rival-avatar" aria-hidden="true">${p.token}</span><div class="rival-identity"><strong>${esc(p.name)}</strong><small>${p.human?'Human':'Computer · '+esc(p.personality||'AI')}${p.bankrupt?' · OUT':''}</small></div><div class="rival-cash"><strong>${money(p.cash)}</strong><small>Worth ${money(worth(p))}</small></div></div><div class="rival-assets"><span class="rival-property-count">${own.length} ${own.length===1?'card':'cards'}</span><div class="rival-property-list">${groups||'<span class="rival-no-properties">None yet</span>'}</div></div></article>`;
+  return `<article class="rival-player ${p.bankrupt?'bankrupt':''}" style="--player:${p.color}"><div class="rival-top">${tokenHTML(p,'small')}<div class="rival-identity"><strong>${esc(p.name)}</strong><small>${p.human?'Human':'Computer · '+esc(p.personality||'AI')}${p.bankrupt?' · OUT':''}</small></div><div class="rival-cash"><strong>${money(p.cash)}</strong><small>Worth ${money(worth(p))}</small></div></div><div class="rival-assets"><span class="rival-property-count">${own.length} ${own.length===1?'card':'cards'}</span><div class="rival-property-list">${groups||'<span class="rival-no-properties">None yet</span>'}</div></div></article>`;
  }).join('');
  $('playerCards').querySelectorAll('[data-rival-space]').forEach(b=>b.onclick=()=>showSpace(Number(b.dataset.rivalSpace)));
 }
 
-function renderTurn(){const p=current();let html=`<div class="turn-badge">${p.human?'LOCAL PLAYER':'COMPUTER PLAYER'} · ${p.token}</div><div class="turn-name">${esc(p.name)}</div><div class="turn-funds"><div class="funds-cell"><small>Cash</small><strong>${money(p.cash)}</strong></div><div class="funds-cell"><small>Net worth</small><strong>${money(worth(p))}</strong></div></div>`;
+function renderTurn(){const p=current();let html=`<div class="turn-badge">${p.human?'LOCAL PLAYER':'COMPUTER PLAYER'} · ${tokenHTML(p,'small')}</div><div class="turn-name">${esc(p.name)}</div><div class="turn-funds"><div class="funds-cell"><small>Cash</small><strong>${money(p.cash)}</strong></div><div class="funds-cell"><small>Net worth</small><strong>${money(worth(p))}</strong></div></div>`;
  if(g.lastDice.some(Boolean))html+=`<div class="dice" aria-label="Last dice ${g.lastDice[0]} and ${g.lastDice[1]}"><span class="die">${g.lastDice[0]}</span><span class="die">${g.lastDice[1]}</span></div>`;
  html+='<div class="turn-actions">';switch(g.phase){case 'handoff':html+='<p class="notice">Pass the device to '+esc(p.name)+'. Press Ready when they have it.</p><button class="button primary" data-action="ready">Ready — My Turn</button>';break;
  case 'roll':if(p.held>0)html+=`<div class="notice">Scenic Detour · Attempt ${p.held}/3. Roll doubles to leave, pay $50, or use a pass.</div>`;html+=p.human?'<button class="button primary" data-action="roll">🎲 Roll dice</button>':`<div class="notice">${esc(p.name)} is thinking…</div>`;if(p.held>0&&p.human)html+='<button class="button minor" data-action="release">Pay / use Detour Pass</button>';break;
@@ -607,5 +672,5 @@ function maybeBotTrade(p){if(!g||p.human||g.phase!=='manage')return false;const 
 function saveDialog(){if(!g)return;showModal('Save and export',`<p>Game auto-saves to this browser after every action. For another Chromebook, export a portable save file.</p><div class="modal-actions"><button class="button primary" id="exportSave">Download save JSON</button><button class="button minor" id="exportCode">Show portable code</button></div><p class="subtle">Save files or portable codes can be restored using the import box below. Keep the file private if you use a real name.</p><label>Import a saved-game JSON file<input type="file" accept=".json,application/json" id="importFile"></label><label>Or paste a portable code<textarea id="importCode" placeholder="Paste your Nachesopoly save code here"></textarea></label><button class="button minor" id="importFromCode">Import code</button><div id="importMsg" role="status"></div>`);
  $('exportSave').onclick=()=>{let blob=new Blob([JSON.stringify(g,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nachesopoly-naches-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};$('exportCode').onclick=()=>{const raw=JSON.stringify(g);const code='NV1.'+btoa(unescape(encodeURIComponent(raw)));$('importCode').value=code;$('importCode').select();};$('importFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());importGame(data);}catch(err){$('importMsg').textContent='Invalid save file.';}};$('importFromCode').onclick=()=>{try{const val=$('importCode').value.trim();if(!val.startsWith('NV1.'))throw Error('format');importGame(JSON.parse(decodeURIComponent(escape(atob(val.slice(4))))));}catch(err){$('importMsg').textContent='Could not read that code.';}};}
 function importGame(data){cancelPresentation();if(!validateState(data))throw Error('Save validation failed');if(!confirm('Replace the current match with this imported saved game?'))return;g=data;normalizeLoadedGame();if(!current().human&&g.phase!=='recap'&&!g.botTurn)beginBotTurn();closeModal();enterGame();ledger('Imported a valid Nachesopoly saved match.');commit();}
-function resultsDialog(){const arr=[...g.players].sort((a,b)=>Number(a.bankrupt)-Number(b.bankrupt)||worth(b)-worth(a));showModal('Valley Ventures · final standings',`<div>${arr.map((p,i)=>`<div class="player-card" style="--player:${p.color}"><div style="font-size:23px">${i===0?'🏆':p.token}</div><div><b>#${i+1} ${esc(p.name)}</b><small>${p.bankrupt?'Bankrupt · ':''}${owned(p.id).length} properties · ${p.stats.purchases} purchases</small></div><div class="pcash">${money(worth(p))}<small>Cash ${money(p.cash)}</small></div></div>`).join('')}</div><p class="subtle">Stage 1 shows core financial rankings. Personalized funny awards, XP and podium celebrations arrive in later stages.</p><button class="button minor" id="viewLogResults">View transaction log</button>`);$('viewLogResults').onclick=showHistory;}
+function resultsDialog(){const arr=[...g.players].sort((a,b)=>Number(a.bankrupt)-Number(b.bankrupt)||worth(b)-worth(a));showModal('Valley Ventures · final standings',`<div>${arr.map((p,i)=>`<div class="player-card" style="--player:${p.color}"><div class="result-token">${i===0?'🏆 ':''}${tokenHTML(p,'medium')}</div><div><b>#${i+1} ${esc(p.name)}</b><small>${p.bankrupt?'Bankrupt · ':''}${owned(p.id).length} properties · ${p.stats.purchases} purchases</small></div><div class="pcash">${money(worth(p))}<small>Cash ${money(p.cash)}</small></div></div>`).join('')}</div><p class="subtle">Stage 1 shows core financial rankings. Personalized funny awards, XP and podium celebrations arrive in later stages.</p><button class="button minor" id="viewLogResults">View transaction log</button>`);$('viewLogResults').onclick=showHistory;}
 setupInit();

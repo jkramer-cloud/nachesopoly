@@ -195,3 +195,51 @@
  text-wrap:wrap;line-height:1.08;
 }
 #game .board-cell .cell-name.auto-shortened{letter-spacing:-.01em}
+
+/* Stage 2.4: valley-themed player token customization and readable board pieces. */
+.token-setup-hint{font-size:12px;color:#557267;margin:4px 0 12px;line-height:1.45}
+.token-setup-player{display:flex;gap:11px;align-items:center;min-width:0;flex-wrap:wrap}
+.token-setup-player .setup-player-info{min-width:110px;flex:1 1 115px}
+.token-setup-player .setup-player-info input{min-width:0;max-width:100%;width:100%}
+.token-selected-name{color:#54766a;font-size:10px;font-weight:700;margin-top:4px}
+.token-customize{font-size:11px!important;padding:8px 9px!important;flex:none}
+.game-token{--token-color:#b64b47;display:inline-grid;place-items:center;position:relative;isolation:isolate;flex:none;border-radius:50%;aspect-ratio:1;border:2px solid #fff;outline:2px solid var(--token-color);background:radial-gradient(circle at 30% 22%,#ffffff 0 15%,#eff7f1 65%,#c5d9d1 100%);box-shadow:0 2px 3px #16372d5c,0 0 0 1px #162e29;vertical-align:middle;user-select:none}
+.game-token .token-glyph{line-height:1;display:grid;place-items:center;filter:drop-shadow(0 1px 0 #fff9)}
+.game-token--board{width:clamp(14px,1.45vw,21px);height:clamp(14px,1.45vw,21px);border-width:1.5px;outline-width:1.5px;box-shadow:0 1px 2px #0009;z-index:1}
+.game-token--board .token-glyph{font-size:clamp(10px,1.05vw,16px)}
+.game-token--small{width:24px;height:24px}.game-token--small .token-glyph{font-size:17px}
+.game-token--medium{width:34px;height:34px}.game-token--medium .token-glyph{font-size:24px}
+.game-token--large{width:45px;height:45px}.game-token--large .token-glyph{font-size:31px}
+.game-token--hero{width:66px;height:66px;border-width:3px;outline-width:3px}.game-token--hero .token-glyph{font-size:42px}
+.token-accessory{position:absolute;right:-5px;top:-6px;background:#ffdf7d;color:#493e1d;border:1px solid #825a36;border-radius:50%;width:14px;height:14px;display:grid;place-items:center;font-size:11px;font-weight:900;z-index:2;line-height:1}
+.game-token--board .token-accessory{width:8px;height:8px;right:-4px;top:-4px;font-size:7px;border:0}
+.game-token--moving{animation:tokenHop .22s cubic-bezier(.2,.9,.35,1.3) both;z-index:5}
+@keyframes tokenHop{0%{transform:translateY(7px) scale(.75)}65%{transform:translateY(-5px) scale(1.16)}100%{transform:none}}
+#game .cell-tokens{display:grid;grid-template-columns:repeat(2,min-content);justify-content:center;align-items:center;gap:2px;position:relative;z-index:3;flex:none;min-height:16px}
+#game .cell-tokens:empty{display:none}
+#game .board-cell:has(.cell-tokens:not(:empty)) .cell-tokens{margin-top:auto}
+#game .board-cell.active .cell-tokens .game-token{box-shadow:0 0 0 2px #fff6b8,0 1px 3px #0008}
+#game .turn-badge{display:flex;align-items:center;gap:7px}
+#game .rival-top .game-token--small{margin-right:4px}
+#game .portfolio-heading>.game-token{margin-right:2px}
+.token-picker-title{font-size:14px;color:#214c43;margin:18px 0 9px}
+.token-picker-preview{background:#e5f1e8;border:1px solid #bcd5c4;border-radius:14px;padding:14px;display:flex;align-items:center;gap:20px}
+.token-picker-preview b{display:block;font:800 22px Georgia,serif;color:#204e3e}
+.token-picker-preview small{display:block;color:#527a6d;font-size:12px;margin-top:4px}
+.token-choice-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.token-option{border:2px solid #d5e4d8;background:#f7faf5;color:#244b42;cursor:pointer;border-radius:12px;min-height:104px;padding:8px 5px;display:flex;align-items:center;gap:2px;flex-direction:column;text-align:center;font:inherit;transition:transform .13s,border-color .13s}
+.token-option .token-pick-art{font-size:32px;line-height:1.3}.token-option strong{font-size:11px;line-height:1.2}.token-option small{font-size:9px;color:#678074;line-height:1.3}
+.token-option:hover:not(:disabled){transform:translateY(-2px);border-color:#447967}.token-option.selected{border-color:#c69035;background:#fff4d4;box-shadow:inset 0 0 0 1px #c69035}
+.token-option:disabled{opacity:.3;cursor:not-allowed}
+.token-palette{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.token-color-choice{display:flex;align-items:center;gap:7px;background:#fff;border:2px solid #e0e9df;border-radius:10px;padding:8px 7px;color:#284c40;cursor:pointer;font:inherit}
+.token-color-choice span{width:19px;height:19px;border-radius:50%;background:var(--swatch);border:2px solid #fff;box-shadow:0 0 0 1px #526357;flex:none}
+.token-color-choice small{font-size:10px;font-weight:750;text-align:left}.token-color-choice.selected{border-color:#d59b31;background:#fff6de}.token-color-choice:disabled{opacity:.3;cursor:not-allowed}
+.token-accessory-list{display:flex;flex-wrap:wrap;gap:7px}.token-accessory-choice{border:2px solid #d3e0d6;border-radius:10px;background:#f8faf5;font:700 12px system-ui;cursor:pointer;padding:8px 12px;color:#34584c}.token-accessory-choice.selected{background:#fff0ca;border-color:#ba8a35}
+.token-done{width:100%;margin-top:10px}
+.token-gallery-players{display:grid;grid-template-columns:1fr 1fr;gap:10px}.token-gallery-player{border:1px solid #d3e4d8;background:#f6f9f4;padding:10px;border-radius:12px;display:flex;align-items:center;gap:13px}
+.token-gallery-player b{display:block;font-size:13px}.token-gallery-player small{display:block;color:#658073;font-size:10px}
+.token-library-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.token-library-item{display:grid;place-items:center;gap:5px;border:1px solid #dbe6dc;background:#f8faf5;border-radius:10px;padding:9px 5px;text-align:center}.token-library-item span{font-size:31px}.token-library-item b{font-size:11px}
+@media(max-width:760px){.token-choice-grid,.token-palette,.token-library-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:490px){.token-choice-grid,.token-palette,.token-library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.token-gallery-players{grid-template-columns:1fr}.token-option{min-height:91px}#game .cell-tokens{gap:0}.game-token--board{width:11px;height:11px;outline-width:1px;border-width:1px}.game-token--board .token-glyph{font-size:7px}.game-token--board .token-accessory{display:none}.token-customize{width:100%;font-size:12px!important}}
+@media(prefers-reduced-motion:reduce){.game-token--moving{animation:none!important}.token-option{transition:none!important}}
