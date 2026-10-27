@@ -311,3 +311,23 @@ body:has(#eventPanel[data-deck="Community Events"]:not(.hidden)) .deck-community
 .event-card-view{position:relative}
 .lap-reminder{margin:9px 0 0;font-size:11px;color:#805f28;background:#fff2d5;border-radius:8px;padding:6px 9px;border:1px solid #eddaa6}
 .asset-explanation{display:block;margin-top:3px;color:#537e70;font-size:10px;line-height:1.35}
+
+/* Stage 2.5.1: gentle business-group tint. Keep taxes, events, routes, utilities and corners neutral. */
+.board-cell.business{background:color-mix(in srgb, var(--group) 12%, #fffdf6);}
+.board-cell.business.owned{background:color-mix(in srgb, var(--group) 17%, #fffdf6);}
+.board-cell.business.active{box-shadow:inset 0 0 0 3px #e0b15b;}
+.portfolio-property.business{background:color-mix(in srgb, var(--group) 12%, #fffdf6);}
+.portfolio-property.business.complete-set{border-color:color-mix(in srgb, var(--group) 55%, #c8d4c9);}
+.portfolio-set-status{font-size:9px;font-weight:850;color:#255448;line-height:1.1;}
+.set-progress{padding:12px;border-radius:10px;border:1px solid color-mix(in srgb,var(--set-color) 35%, #ced6cc);background:color-mix(in srgb,var(--set-color) 13%, #fffdf6);margin:10px 0;display:flex;flex-direction:column;gap:5px;font-size:12px;}
+.set-progress.is-complete{box-shadow:inset 3px 0 0 var(--set-color);}
+.set-progress b{font-size:13px;}
+.set-progress>span{color:#526963;}
+.set-property-names{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;}
+.set-property-names span{font-size:11px;background:#fff8;border:1px solid #bccbc0;border-radius:6px;padding:3px 7px;}
+.set-property-names .set-owned{font-weight:850;border-color:var(--set-color);}
+.upgrade-decision{border:1px solid #c6ded0;background:#f2f8f3;border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:stretch;gap:8px;margin:11px 0;}
+.upgrade-decision>div{display:flex;flex-direction:column;gap:4px;}
+.upgrade-decision>div>span{font-size:12px;color:#516d63;line-height:1.45;}
+.upgrade-decision>.button{width:100%;white-space:normal;}
+.upgrade-guidance{margin:0;color:#425c53;font-size:12px;line-height:1.5;}
